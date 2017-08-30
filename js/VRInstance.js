@@ -11,9 +11,10 @@
 
 import {Scene} from 'three';
 import {Player, GuiSys} from 'ovrui';
-import bundleFromRoot from './bundleFromRoot';
+import bundleFromLocation from './bundleFromLocation';
 import createRootView from './createRootView';
 
+import type Bridge from './Bridge/Bridge';
 import type {RootView} from './createRootView';
 import type Module from './Modules/Module';
 import type {CustomView} from './Modules/UIManager';
@@ -21,16 +22,21 @@ import type {Camera} from 'three';
 
 type VRInstanceOptions = {
   allowCarmelDeeplink?: boolean,
-  disableTouchPanning?: boolean,
+  antialias?: boolean,
   assetRoot?: string,
+  bridge?: Bridge,
+  calculateVerticalFOV?: (number, number) => number,
   camera?: Camera,
+  canvasAlpha?: boolean,
   cursorVisibility?: 'visible' | 'hidden' | 'auto',
   customViews?: Array<CustomView>,
+  disableTouchPanning?: boolean,
   enableHotReload?: boolean,
   font?: any,
   height?: number,
   hideCompass?: boolean,
   hideFullscreen?: boolean,
+  initialProps?: {[prop: string]: any},
   nativeModules?: Array<Module>,
   onEnterVR?: () => void,
   onExitVR?: () => void,
@@ -99,7 +105,10 @@ export default class VRInstance {
       elementOrId: parent,
 
       // Optional Player configuration
+      antialias: options.hasOwnProperty('antialias') ? options.antialias : false,
+      calculateVerticalFOV: options.calculateVerticalFOV,
       camera: options.camera,
+      canvasAlpha: options.hasOwnProperty('canvasAlpha') ? options.antialias : true,
       width: options.width,
       height: options.height,
       onEnterVR: () => this._onEnterVR(),
@@ -132,9 +141,11 @@ export default class VRInstance {
     this.rootView = createRootView(this.guiSys, root, {
       // Name of the mounted root module, from AppRegistry
       assetRoot: assetRoot,
-      bundle: bundleFromRoot(bundle),
+      bridge: options.bridge,
+      bundle: bundleFromLocation(bundle),
       customViews: options.customViews,
       enableHotReload: options.enableHotReload,
+      initialProps: options.initialProps,
       isLowLatency: !this.player.isMobile,
       nativeModules: options.nativeModules,
     });

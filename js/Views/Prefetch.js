@@ -30,7 +30,7 @@ export default class RCTPrefetch extends RCTBaseView {
     Object.defineProperty(this.props, 'source', {
       set: value => {
         if (Array.isArray(value)) {
-          // TODO: Handle cubemaps
+          this.prefetch(value);
         } else {
           this.prefetch(value.uri);
         }
@@ -47,14 +47,28 @@ export default class RCTPrefetch extends RCTBaseView {
       return;
     }
 
-    const onTextureLoad = texture => {
-      RCTPrefetch.addToCache(uri, texture);
-    };
+    if (Array.isArray(uri)) {
+      // Cubemap, check proper format
+      if (uri.length !== 6 || !uri[0].uri) {
+        console.warn(
+          'Prefetch expected cubemap source in format [{uri: http..}, {uri: http..}, ... ]'
+        );
+        return;
+      }
+      // Transform the input array into an array of url strings for threejs to load.
+      const urls = uri.map(function(x) {
+        return x.uri;
+      });
 
-    const onError = () => {};
-
-    const loader = new THREE.TextureLoader();
-    loader.load(uri, onTextureLoad, undefined, () => onError()); // onProgress
+      const loader = new THREE.CubeTextureLoader();
+      loader.setCrossOrigin('Access-Control-Allow-Origin');
+      loader.load(urls, texture => RCTPrefetch.addToCache(urls, texture), () => {}, () => {});
+    } else {
+      // Panorama
+      const loader = new THREE.TextureLoader();
+      loader.setCrossOrigin('Access-Control-Allow-Origin');
+      loader.load(uri, texture => RCTPrefetch.addToCache(uri, texture), () => {}, () => {});
+    }
   }
 
   /**
@@ -63,10 +77,17 @@ export default class RCTPrefetch extends RCTBaseView {
    */
   static addToCache(uri, texture) {
     if (!RCTPrefetch.cache) {
-      RCTPrefetch.cache = [];
+      RCTPrefetch.cache = {};
     }
 
     RCTPrefetch.cache[uri] = texture;
+  }
+
+  /**
+   * isCached
+   */
+  static isCached(uri) {
+    return RCTPrefetch.cache && RCTPrefetch.cache.hasOwnProperty(uri);
   }
 
   /**
@@ -81,7 +102,7 @@ export default class RCTPrefetch extends RCTBaseView {
    */
   static removeFromCache(uri) {
     if (RCTPrefetch.cache) {
-      RCTPrefetch.cache[uri] = null;
+      delete RCTPrefetch.cache[uri];
     }
   }
 

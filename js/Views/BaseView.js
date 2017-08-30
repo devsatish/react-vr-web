@@ -19,7 +19,7 @@ import isPositive from '../Utils/isPositive';
 import * as Yoga from '../Utils/Yoga.bundle';
 import UIManager from '../Modules/UIManager';
 
-import type {UIView} from 'ovrui';
+import type {UIView, GuiSys} from 'ovrui';
 
 const INTERACTION_CALLBACKS = [
   'onEnter',
@@ -125,7 +125,7 @@ export default class RCTBaseView {
   /**
    * constructor: sets defaults for all views
    */
-  constructor() {
+  constructor(guisys: GuiSys) {
     this._borderRadius = null;
     this._borderTopLeftRadius = null;
     this._borderTopRightRadius = null;
@@ -895,7 +895,11 @@ export default class RCTBaseView {
       }
     }
     for (const i in node.children) {
-      RCTBaseView.disposeThreeJSObject(node.children[i]);
+      // Do not dispose of child UIViews, they need to handle their own disposal...
+      const child = node.children[i];
+      if (child.type !== 'UIView') {
+        RCTBaseView.disposeThreeJSObject(node.children[i]);
+      }
     }
     node.parent = null;
     node.children = [];

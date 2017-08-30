@@ -8,7 +8,7 @@
  */
 
 /**
- * @class RCTCylindricalPanel
+ * @class RCTQuadPanel
  * @extends RCTBaseView
  */
 
@@ -18,7 +18,7 @@ import * as OVRUI from 'ovrui';
 import * as THREE from 'three';
 import * as Yoga from '../Utils/Yoga.bundle';
 
-export default class RCTCylindricalPanel extends RCTBaseView {
+export default class RCTQuadPanel extends RCTBaseView {
   /**
    * constructor: allocates the required resources and sets defaults
    */
@@ -44,13 +44,13 @@ export default class RCTCylindricalPanel extends RCTBaseView {
     this.guiSys = guiSys;
     this.camera = new THREE.OrthographicCamera();
     this.subScene = new THREE.Scene();
-    const geometry = new THREE.CylinderGeometry(3, 3, 2, 1, 5, true, 0, 2.0 * Math.PI);
-    this.cylinder = new THREE.Mesh(geometry, this.material);
-    this.cylinder.subScene = this.subScene;
-    this.cylinder.subSceneCamera = this.camera;
-    this.cylinder.scale.z = -1;
+    const geometry = new THREE.PlaneGeometry(1, 1, 1, 1);
+    this.plane = new THREE.Mesh(geometry, this.material);
+    this.plane.subScene = this.subScene;
+    this.plane.subSceneCamera = this.camera;
+    this.plane.scale.z = -1;
     this.view = new OVRUI.UIView(guiSys);
-    this.view.add(this.cylinder);
+    this.view.add(this.plane);
 
     this.subScene.scale.y = -1;
     this.isLayer = true;
@@ -67,33 +67,22 @@ export default class RCTCylindricalPanel extends RCTBaseView {
         this.props._layerWidth = value.width;
         this.props._layerHeight = value.height;
         this.props._layerDensity = value.density;
-        // default distance to 3m
-        this.props._layerRadius = value.radius || 3;
-        this.view.zOffset = this.props._layerRadius;
+        // default distance to 4m
+        this.props._layerDistance = value.distance || 4;
         this.subScene._rttWidth = value.width;
         this.subScene._rttHeight = value.height;
-        this.cylinder.geometry.dispose();
-        // The subtended angle given the fraction of the layer (layerDensity) covered by the
-        // layerWidth
-        const delta = 2 * Math.PI * this.props._layerWidth / this.props._layerDensity;
+        this.plane.geometry.dispose();
         // The same calculation as shell
-        // there is not a direct correlation but for a small angle (<60) the arc of the cylinder
+        // there is not a direct correlation but for a small angle (<60) the arc
         // is also a reasonable approximation of the chord (within 95%)
         // as our angle is small and dealing with px height rather than angles a proportion of an arc
         // is used
+        const halfWidth =
+          this.props._layerDistance * (Math.PI * value.width / this.props._layerDensity);
         const halfHeight =
-          this.props._layerRadius * (Math.PI * value.height / this.props._layerDensity);
-        this.cylinder.geometry = new THREE.CylinderGeometry(
-          this.props._layerRadius,
-          this.props._layerRadius,
-          halfHeight * 2,
-          60,
-          6,
-          true,
-          -delta * 0.5,
-          delta
-        );
-        this.cylinder.needsUpdate = true;
+          this.props._layerDistance * (Math.PI * value.height / this.props._layerDensity);
+        this.plane.geometry = new THREE.PlaneGeometry(halfWidth * 2, halfHeight * 2, 1, 1);
+        this.plane.needsUpdate = true;
         this._createRTT();
       },
     });
@@ -128,7 +117,7 @@ export default class RCTCylindricalPanel extends RCTBaseView {
         this.props._layerWidth,
         this.props._layerHeight
       );
-      this.cylinder.subSceneCamera = this.camera;
+      this.plane.subSceneCamera = this.camera;
       this.guiSys.unregisterOffscreenRender(this.offscreenUID);
       this.offscreenUID = this.guiSys.registerOffscreenRender(this.subScene, this.camera, this.rtt);
     }
@@ -148,7 +137,7 @@ export default class RCTCylindricalPanel extends RCTBaseView {
 
   presentLayout() {
     super.presentLayout();
-    this.cylinder.visible = this.YGNode.getDisplay() !== Yoga.DISPLAY_NONE;
+    this.plane.visible = this.YGNode.getDisplay() !== Yoga.DISPLAY_NONE;
   }
 
   dispose() {
