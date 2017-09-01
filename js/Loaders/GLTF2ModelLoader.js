@@ -48,6 +48,7 @@ class GLTF2MeshInstance {
   timeStamp: number;
   activeAnimations: any;
   allAnimations: any;
+  animationParams: any;
 
   constructor(definition: any, parent: UIView) {
     this.url = extractURL(definition.gltf2) || '';
@@ -56,35 +57,38 @@ class GLTF2MeshInstance {
     this.timeStamp = -1;
     this.activeAnimations = {};
     this.allAnimations = {};
+    this.animationParams = this.parseAnimationParams(definition);
 
     const onLoad = gltf => {
       if (gltfStateCache.has(this.url)) {
         gltfStateCache.addReference(this.url);
-      } else {
-        // disabling until gltf clone issue is resolved
-        // https://github.com/mrdoob/three.js/issues/11573
-        //gltfStateCache.addEntry(this.url, gltf);
       }
-      // https://github.com/mrdoob/three.js/issues/11573
-      //this.scene = gltf.scene.clone();
       this.scene = gltf.scene;
 
       this.mixer = new THREE.AnimationMixer(this.scene);
 
-      // load the animations into the mixer
-      const animations = gltf.animations;
-      if (animations && animations.length) {
-        for (let i = 0; i < animations.length; i++) {
-          const animation = animations[i];
-          this.allAnimations[animation.name] = this.mixer.clipAction(animation);
+      const params = this.animationParams;
+
+      const shouldPlayAnimation = params.play;
+      if (shouldPlayAnimation) {
+        // patch animation settings
+        const fadeIn = !!params.fadeTime? params.fadeTime : 0;
+        const timeScale = !!params.timeScale ? params.timeScale : 1;
+        const weight = !!params.weight ? params.weight : 1;
+        // load the animations into the mixer
+        const animations = gltf.animations;
+        if (animations && animations.length) {
+          for (let i = 0; i < animations.length; i++) {
+            const animation = animations[i];
+            animationAction = this.mixer.clipAction(animation);
+            animationAction.fadeIn(fadeIn);
+            animationAction.setEffectiveTimeScale(timeScale);
+            animationAction.setEffectiveWeight(weight);
+            this.allAnimations[animation.name] = animationAction.play();
+          }
         }
       }
 
-      // apply the definition animation settings
-      this.updateAnimation(definition);
-
-      // need to wait a frame for other attributes to setup
-      // FIXME
       requestAnimationFrame(() => {
         parent.add(this.scene);
       });
@@ -112,10 +116,6 @@ class GLTF2MeshInstance {
       this.url,
       gltf => {
         onLoad(gltf);
-        /*for (const callback of loadList[this.url]) {
-          callback(gltf);
-        }
-        delete loadList[this.url];*/
       },
       () => {},
       () => {
@@ -123,6 +123,17 @@ class GLTF2MeshInstance {
         delete loadList[this.url];
       }
     );
+  }
+
+  parseAnimationParams(definition: any): any {
+    const defaultParam = {
+      play: false,
+      timeScale: 0,
+    };
+    if (!!definition) {
+      return definition.animations || defaultParam;
+    }
+    return defaultParam;
   }
 
   updateAnimation(definition: any): void {
