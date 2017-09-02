@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "ovrui": "https://github.com/jingsh/OVRUI/tarball/748e6c471ad64d78412328363c16bc2c4291c50d",
+    "three-fbx-loader": "^1.0.2",
     "three-gltf2-loader": "^1.0.0"
   }
 }
