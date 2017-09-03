@@ -18,8 +18,8 @@
     "README.md"
   ],
   "peerDependencies": {
-    "react": "16.0.0-alpha.12",
-    "react-native": "~0.45.0"
+    "react": "15.4.2",
+    "react-native": "0.42.0"
   },
   "dependencies": {
     "ovrui": "https://github.com/jingsh/OVRUI/tarball/748e6c471ad64d78412328363c16bc2c4291c50d",
