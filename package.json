@@ -22,7 +22,7 @@
     "react-native": "0.42.0"
   },
   "dependencies": {
-    "ovrui": "https://github.com/jingsh/OVRUI/tarball/748e6c471ad64d78412328363c16bc2c4291c50d",
+    "ovrui": "https://github.com/jingsh/OVRUI/tarball/33d3fc76b4d2a9881bcceeb0ef9940f210792ae8",
     "three-fbx-loader": "^1.0.2",
     "three-gltf2-loader": "^1.0.0"
   }
