@@ -22,6 +22,6 @@
     "react-native": "~0.42.0"
   },
   "dependencies": {
-    "ovrui": "https://github.com/jingsh/OVRUI/tarball/1b8aa46a93ed99dfe82a5fe155519ebfb5dcdad1"
+    "ovrui": "https://github.com/jingsh/OVRUI/tarball/b7675c2c2338871b6ac278472c895f39a80617bd"
   }
 }
