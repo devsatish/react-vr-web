@@ -12,6 +12,8 @@
 import * as THREE from 'three';
 import type {UIView} from 'ovrui';
 import ObjModelLoader from '../Loaders/ObjModelLoader';
+import GLTF2ModelLoader from '../Loaders/GLTF2ModelLoader';
+import FBXModelLoader from '../Loaders/FBXModelLoader';
 
 export interface MeshInstance {
   // returns false if instance can't be updated and instances needs to be recreated
@@ -21,6 +23,8 @@ export interface MeshInstance {
   setLit(value: boolean): void,
   setTexture(value: string): void,
   setWireframe(value: boolean): void,
+
+  frame(timeStamp: number, deltaTime: number): void,
 
   // todo
   // support for animation
@@ -74,4 +78,6 @@ export function createModelInstance(
   return null;
 }
 // register the default obj loader
+registerModelLoader(new GLTF2ModelLoader());
 registerModelLoader(new ObjModelLoader());
+registerModelLoader(new FBXModelLoader());
