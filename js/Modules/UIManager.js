@@ -108,6 +108,7 @@ export default class UIManager extends Module {
   _rootViews: {[tag: string]: RCTBaseView};
   _viewsOfType: {[name: string]: {[tag: string]: RCTBaseView}};
   _layoutAnimation: any;
+  _lastFrameStart: number;
 
   /**
    * Construct a UIManager with a React Native Context and an OVRUI GuiSys.
@@ -583,8 +584,13 @@ export default class UIManager extends Module {
   frame(frameStart: number) {
     // call frame function for each view
     // optimization is to register interest in update
+    if (this._lastFrameStart < 0) {
+      this._lastFrameStart = frameStart;
+    }
+    const deltaTime = frameStart - this._lastFrameStart;
+    this._lastFrameStart = frameStart;
     for (const tag in this._views) {
-      this._views[tag].frame(frameStart);
+      this._views[tag].frame(frameStart, deltaTime);
     }
     // layout the views
     this.layout();
