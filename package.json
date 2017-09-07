@@ -1,7 +1,7 @@
 {
   "private": true,
   "name": "react-vr-web",
-  "version": "1.4.7",
+  "version": "1.4.8",
   "description": "A framework for building VR applications with React",
   "license": "BSD-3-Clause",
   "repository": {
@@ -22,6 +22,6 @@
     "react-native": "~0.42.0"
   },
   "dependencies": {
-    "ovrui": "https://github.com/jingsh/OVRUI/tarball/099c34844268d528a686d0d07ce3c194b585177b"
+    "ovrui": "https://github.com/jingsh/OVRUI/tarball/fd1c4485a8263892bd7fc6ad56f6c60df8105bc8"
   }
 }
